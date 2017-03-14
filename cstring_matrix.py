@@ -7,11 +7,11 @@ Ex: Voce tem um multiplicacao de uma matrix A 4x4 * B 4x4, e 2 substitutos aptos
 tarefa. Então dividiremos as matrizes em partes iguais.
 
  [[1 2 3 4]         [[1 2 3 4]
-  [5 6 7 8]     X   [5 6 7 8] 
+  [5 6 7 8]     X   [5 6 7 8]
   [9 10 11 12]      [9 10 11 12]
   [13 14 15 16]]    [13 14 15 16]]
 
-P1: 
+P1:
     [1 2]       [[1 2 3 4]
     [5 6]   X   [5 6 7 8]
     [9 10]
@@ -19,7 +19,7 @@ P1:
 
 P2:
     [3 4]       [9 10 11 12]
-    [7 8]   X   [13 14 15 16]] 
+    [7 8]   X   [13 14 15 16]]
     [11 12]
     [15 16]
 
@@ -27,7 +27,7 @@ Apos dividi-la, envio P1 para o 1º substituto e P2 para o 2º substituto.
 Por fim, recebo o resultado de P1 e P2 e ao soma-los obtenho: A*B.
 
 Para utilizar o programa, primeiramente, insira os enderecos dos substitutos no vetor 'S'.
-Em seguida inicie os substitutos. 
+Em seguida inicie os substitutos.
 Por fim compare os resultados localizados em /tmp/resultado_local e resultado_offload.
 Para obter o resultado local utilize o programa noOffload.py.
 
@@ -48,18 +48,15 @@ ip = "localhost"
 #ip = "192.168.56.101"
 
 #S = [ "200.129.39.76","200.129.39.73","200.129.39.89","200.129.39.82"  ] # Surrogates
-#S = [ "200.129.39.84","200.129.39.76","200.129.39.73","200.129.39.82","200.129.39.94" ] # Surrogates
-S = ["200.129.39.84","200.129.39.82"]
-#S = [ip,'192.168.56.102']
+S = [ "200.129.39.84","200.129.39.76" ] # Surrogates
 #+++ Matrix sizes +++
 
 #mA = np.arange(25).reshape(5,5)
 #mA = np.arange(400).reshape(20,20)
 #mA = np.arange(10000).reshape(100,100)
-#mA = np.arange(1000000).reshape(1000,1000)
-#mA = np.arange(25000000).reshape(5000,5000)
-mA = np.arange(4000000).reshape(2000,2000)
-#mA = np.arange(100000000).reshape(10000,10000)
+mA = np.arange(1000000).reshape(1000,1000)
+# mA = np.arange(25000000).reshape(5000,5000)
+#mA = np.arange(4000000).reshape(2000,2000)
 mB = mA
 
 #Aum = mA[:len(mA), :len(mA)/2]
@@ -77,22 +74,22 @@ ini = 0
 
 while cont < num:
     try:
-        tcp.connect((S[cont],2222))                        
-        Pum = mA[:len(mA), ini:fin]    
-        Pdois = mB[ini:fin, :len(mB)]    
-        
+        tcp.connect((S[cont],2222))
+        Pum = mA[:len(mA), ini:fin]
+        Pdois = mB[ini:fin, :len(mB)]
+
         ini = fin
-        fin += fin          
+        fin += fin
         cont += 1
 
         start = timer()
         a = StringIO()
-        np.save(a,Pum)
+        np.savez_compressed(a,frame=Pum)
         a.seek(0)
         pum = a.read()
-        
+
         f = StringIO()
-        np.save(f,Pdois)
+        np.savez_compressed(f,frame=Pdois)
         f.seek(0)
         pdois = f.read()
         end = timer()
@@ -105,7 +102,7 @@ while cont < num:
         end = timer()
         print "Time to send> %.3f" % (end-start)
 
-        # -==================================== RECEIVER ====================================-  
+        # -==================================== RECEIVER ====================================-
 
         ultimate_buffer=''
         final_image = 0
@@ -114,14 +111,14 @@ while cont < num:
             if not receiving_buffer: break
             ultimate_buffer+= receiving_buffer
 
-        final_image = np.load(StringIO(ultimate_buffer))
+        final_image = np.load(StringIO(ultimate_buffer))['frame']
         print "frame received..."
-        
+
         result = np.add(result,final_image)
 
-        tcp.close()        
+        tcp.close()
         tcp = socket(AF_INET,SOCK_STREAM)
-        
+
     except:
                print "[-] Error to conect!"
                cont +=1

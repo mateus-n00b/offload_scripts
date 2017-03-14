@@ -1,7 +1,7 @@
 #!/usr/bin/python
 '''
 
-Firstly, you should set the surrogates's IPs on the S array. 
+First, you should set the surrogates's IPs on the S array. 
 After you can start the servers.
 By default the servers will listen on the port 2222.
 
@@ -26,12 +26,12 @@ conn, addr = tcp.accept()
 ultimate_buffer=''
 while True:
     receiving_buffer = conn.recv(2000)
-    
-    if not receiving_buffer: break
-    ultimate_buffer+= receiving_buffer    
 
-mA = np.load(StringIO(str(ultimate_buffer).split('||||||')[0]))
-mB = np.load(StringIO(str(ultimate_buffer).split('||||||')[1]))
+    if not receiving_buffer: break
+    ultimate_buffer+= receiving_buffer
+
+mA = np.load(StringIO(str(ultimate_buffer).split('||||||')[0]))['frame']
+mB = np.load(StringIO(str(ultimate_buffer).split('||||||')[1]))['frame']
 
 start = timer()
 tosend = np.dot(mA,mB)
@@ -40,7 +40,7 @@ print "Time to process> %.3f" % (end-start)
 
 start = timer()
 f = StringIO()
-np.save(f,tosend)
+np.savez_compressed(f,frame=tosend)
 f.seek(0)
 out = f.read()
 end = timer()
